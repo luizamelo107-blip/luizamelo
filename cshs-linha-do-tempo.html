@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ciências Sociais e Humanas em Saúde: eixo ou apoio?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F4F8; --ink:#14213D; --soft:#5B667D; --line:#D5DAE4; --panel:#FFFFFF;
+  --cshs:#D81E5B; --ppg:#E8A200; --epi:#1B9AAA;
+  --display:"Bricolage Grotesque","Trebuchet MS","Segoe UI",sans-serif;
+  --body:"Instrument Sans","Segoe UI",Helvetica,Arial,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1628; --ink:#EEF1F7; --soft:#9AA5BD; --line:#2A3550; --panel:#182036;
+    --cshs:#FF4F86; --ppg:#FFC233; --epi:#3CC5D4;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1628; --ink:#EEF1F7; --soft:#9AA5BD; --line:#2A3550; --panel:#182036;
+  --cshs:#FF4F86; --ppg:#FFC233; --epi:#3CC5D4;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 3.6rem);scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--body);font-size:clamp(1rem,.9rem + .45vw,1.25rem);line-height:1.5;
+  overflow-x:hidden;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--cshs);outline-offset:3px;border-radius:6px}
+strong{font-weight:600}
+
+/* barra fixa */
+.bar{
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:5;
+  display:flex;justify-content:flex-end;align-items:center;gap:.8rem;flex-wrap:wrap;
+  padding:.55rem clamp(1rem,4vw,3rem);background:var(--bg);border-bottom:1px solid var(--line);
+  font-size:.8em;
+}
+.legend{display:flex;gap:.3rem;flex-wrap:wrap}
+.legend button{
+  padding:.25em .7em;border-radius:999px;border:1.5px solid var(--line);color:var(--soft);
+}
+.legend button::before{
+  content:"";display:inline-block;width:1.1em;height:.4em;border-radius:2px;margin-right:.45em;
+  vertical-align:middle;background:var(--k);
+}
+.legend button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink)}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(1rem,4vw,3rem)}
+
+/* abertura */
+.hero{min-height:86vh;display:flex;flex-direction:column;justify-content:center;padding-block:8vh}
+.hero h1{
+  font-family:var(--display);font-weight:800;letter-spacing:-.045em;line-height:.9;
+  font-size:clamp(3.2rem,12vw,10.5rem);margin:0 0 .25em;
+}
+.hero p{max-width:46ch;margin:0 0 1.2em}
+.pills{display:flex;gap:.6rem;flex-wrap:wrap}
+.pill{
+  font-family:var(--display);font-weight:600;padding:.55em 1.2em;border-radius:999px;
+  border:2px solid var(--ink);transition:background .2s,color .2s;
+}
+.pill[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.say{min-height:1.6em;margin-top:.9rem;color:var(--soft)}
+.hint{margin-top:2.5rem;font-size:.85em;color:var(--soft)}
+
+.plain{padding-block:10vh;max-width:60ch}
+.plain h2,.end h2{
+  font-family:var(--display);font-weight:600;letter-spacing:-.02em;line-height:1.05;
+  font-size:clamp(1.7rem,1.1rem + 3vw,3.4rem);margin:0 0 .5em;
+}
+
+/* linha do tempo */
+#tl{position:relative}
+#draw{position:absolute;top:0;left:0;width:100%;height:0;overflow:hidden;pointer-events:none}
+#draw svg{display:block}
+#draw path{transition:opacity .3s}
+#draw svg[data-focus] path{opacity:.13}
+#draw svg[data-focus="c"] path.c,#draw svg[data-focus="p"] path.p,#draw svg[data-focus="e"] path.e{opacity:1}
+#draw path.c{fill:var(--cshs)} #draw path.p{fill:var(--ppg)} #draw path.e{fill:var(--epi)}
+
+.st{
+  position:relative;display:grid;grid-template-columns:minmax(0,1fr) 140px minmax(0,1fr);
+  min-height:82vh;padding-top:9vh;
+}
+.node{
+  position:absolute;left:50%;top:calc(9vh + 1.6rem);width:20px;height:20px;margin-left:-10px;
+  border-radius:50%;border:3px solid var(--ink);background:var(--bg);z-index:1;
+  transition:background .3s,transform .3s;
+}
+.st.on .node{background:var(--ink);transform:scale(1.15)}
+.card{grid-column:3;opacity:0;transform:translateY(26px);transition:opacity .5s ease,transform .5s ease}
+.st.l .card{grid-column:1;text-align:right}
+.st.l .chips,.st.l .acts{justify-content:flex-end}
+.st.on .card{opacity:1;transform:none}
+.year{
+  font-family:var(--display);font-weight:800;letter-spacing:-.045em;line-height:.9;
+  font-size:clamp(3rem,8.5vw,7.4rem);margin:0 0 .12em;
+}
+.card h3{
+  font-family:var(--display);font-weight:600;letter-spacing:-.02em;line-height:1.1;
+  font-size:clamp(1.25rem,1rem + 1.4vw,2.1rem);margin:0 0 .45em;
+}
+.card p{margin:0 0 .8em}
+.chips,.acts{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem}
+.chip{
+  padding:.28em .8em;border-radius:999px;border:1.5px solid var(--line);font-size:.86em;
+  transition:background .2s,border-color .2s,color .2s;
+}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.note{min-height:3.2em;font-size:.9em;color:var(--soft);margin:0 0 .6em}
+.tbtn{
+  font-family:var(--display);font-weight:600;padding:.45em 1em;border-radius:999px;
+  background:var(--cshs);color:#fff;
+}
+.tens{
+  margin-top:.7rem;padding:.9rem 1.1rem;background:var(--panel);text-align:left;
+  border-left:6px solid var(--cshs);border-radius:0 14px 14px 0;
+}
+.tens[hidden]{display:none}
+
+/* fecho */
+.end{padding-block:12vh}
+.looks{display:flex;gap:.6rem;flex-wrap:wrap;margin:1rem 0}
+.looks button{
+  font-family:var(--display);font-weight:600;padding:.6em 1.2em;border-radius:999px;
+  border:2px solid var(--k);transition:background .2s,color .2s;
+}
+.looks button[aria-pressed="true"]{background:var(--k);color:#fff}
+.lookout{min-height:4.5em;max-width:56ch;font-size:1.08em}
+#desafios{margin-top:1rem;max-width:62ch}
+#desafios ul{margin:0;padding:1rem 1.1rem 1rem 2.3rem;background:var(--panel);border-left:6px solid var(--ink);border-radius:0 14px 14px 0;display:grid;gap:.55em}
+.answer{margin-top:1.4rem}
+.answer[hidden]{display:none}
+.answer .year{color:var(--cshs)}
+.tres{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1rem;margin:1.4rem 0;max-width:62rem}
+.tres div{padding:1rem 1.1rem;background:var(--panel);border-top:5px solid var(--cshs);border-radius:0 0 14px 14px}
+.tres dt{font-family:var(--display);font-weight:600;font-size:1.15em;margin-bottom:.3em}
+.tres dd{margin:0}
+.answer ul{padding-left:1.1em;max-width:52ch;display:grid;gap:.4em}
+.ask{font-family:var(--display);font-weight:600;font-size:clamp(1.4rem,1rem + 2vw,2.6rem);line-height:1.1;margin:1.2em 0 0;max-width:22ch}
+details{margin-top:3rem;font-size:.85em;color:var(--soft);max-width:70ch}
+details summary{cursor:pointer;color:var(--ink);font-weight:600}
+details li{margin:.3em 0}
+footer{padding:2rem 0 4rem;font-size:.75em;color:var(--soft)}
+
+@media (max-width:760px){
+  .st{grid-template-columns:60px minmax(0,1fr);min-height:auto;padding:7vh 0 9vh}
+  .card,.st.l .card{grid-column:2;text-align:left}
+  .st.l .chips,.st.l .acts{justify-content:flex-start}
+  .node{left:30px;top:calc(7vh + 1.2rem)}
+  .legend button{font-size:.92em;padding:.2em .55em}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .card{opacity:1;transform:none;transition:none}
+  .node,.pill,.chip,#draw path{transition:none}
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="legend" role="group" aria-label="Destacar um pilar na linha do tempo">
+    <button data-f="c" aria-pressed="false" style="--k:var(--cshs)">Ciências Sociais e Humanas</button>
+    <button data-f="p" aria-pressed="false" style="--k:var(--ppg)">Política, Planejamento e Gestão</button>
+    <button data-f="e" aria-pressed="false" style="--k:var(--epi)">Epidemiologia</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section class="hero stop" data-quem="0">
+    <h1>Eixo ou apoio?</h1>
+    <p>Ciências Sociais e Humanas em Saúde: uma linha do tempo, de 1848 a hoje, sobre o lugar das ciências sociais na Saúde Coletiva.</p>
+    <div class="pills" role="group" aria-label="Sua aposta">
+      <button class="pill" aria-pressed="false">Eixo</button>
+      <button class="pill" aria-pressed="false">Apoio</button>
+    </div>
+    <p class="say" id="say" aria-live="polite"></p>
+    <p class="hint">Role a página para formar a linha do tempo. Toque nos nomes e abra a tensão de cada parada.</p>
+  </section>
+
+  <section class="plain stop" data-quem="0">
+    <h2>Um olhar, não uma técnica</h2>
+    <p>Sociologia, antropologia, ciência política, história, filosofia e psicologia reunidas para compreender saúde, doença e cuidado como fenômenos sociais, atravessados por relações de poder.</p>
+    <p>Segundo Loyola, a Saúde Coletiva é invenção brasileira e nasceu na academia, quando já não se tratava de organizar um sistema público de saúde, mas de estendê-lo a toda a população. O que a especifica é o olhar social contido na palavra "coletiva".</p>
+    <p>As três faixas que vão surgir abaixo são os pilares do campo. A espessura indica o peso de cada um, em leitura a partir de Loyola.</p>
+  </section>
+
+  <div id="tl">
+    <div id="draw" aria-hidden="true"><svg></svg></div>
+  </div>
+
+  <section class="end stop" data-quem="6">
+    <h2>Um caso, três olhares: HIV/aids</h2>
+    <p>Toque em cada pilar para ver o que ele enxerga.</p>
+    <div class="looks" role="group" aria-label="Olhares sobre o HIV/aids">
+      <button data-k="e" aria-pressed="false" style="--k:var(--epi)">Epidemiologia</button>
+      <button data-k="p" aria-pressed="false" style="--k:var(--ppg)">Política, Planejamento e Gestão</button>
+      <button data-k="c" aria-pressed="false" style="--k:var(--cshs)">Ciências sociais</button>
+    </div>
+    <p class="lookout" id="lookout" aria-live="polite"></p>
+  </section>
+
+  <section class="end stop" data-quem="6">
+    <h2>Desafios que ficam</h2>
+    <p>Para Loyola, o principal desafio é político. Toque para abrir cada plano.</p>
+    <div class="pills" role="group" aria-label="Planos dos desafios">
+      <button class="pill" data-d="i" aria-pressed="false">Por dentro da área</button>
+      <button class="pill" data-d="x" aria-pressed="false">Por fora</button>
+    </div>
+    <div id="desafios" aria-live="polite"></div>
+  </section>
+
+  <section class="end stop" data-quem="6">
+    <h2>Voltando à pergunta do início</h2>
+    <button class="pill" id="reveal" aria-expanded="false" aria-controls="answer">Revelar nossa resposta</button>
+    <div class="answer" id="answer" hidden>
+      <p class="year">Eixo.</p>
+      <p><strong>Constitutivas, ainda que subalternas.</strong></p>
+      <p>Castellanos, Loyola e Iriart definem as ciências sociais em saúde como, ao mesmo tempo, uma área do conhecimento e um eixo da Saúde Coletiva. Para Loyola, o lugar delas é central: o cimento da área.</p>
+      <dl class="tres">
+        <div><dt>Quando surgiu?</dt><dd>No pós-II Guerra, como área no mundo. No Brasil, nos anos 1970, pela escola médica.</dd></div>
+        <div><dt>Quando se consolidou?</dt><dd>Com a Abrasco (1979), a Reforma Sanitária e, depois, congressos e periódicos próprios.</dd></div>
+        <div><dt>Qual é o seu papel?</dt><dd>Constitutivo: formulou as premissas do campo. Saúde como prática social, como política e como direito.</dd></div>
+      </dl>
+      <ul>
+        <li>O social não é uma variável, é o modo de olhar.</li>
+        <li>A hegemonia entre as áreas é histórica e pode mudar.</li>
+        <li>A força do campo está na tensão entre os três pilares.</li>
+      </ul>
+      <p class="ask">O desafio é político. Queremos fazer isso?</p>
+    </div>
+    <details>
+      <summary>Referências</summary>
+      <ul>
+        <li>Castellanos, Loyola e Iriart. Ciências Sociais em Saúde Coletiva. In: Paim e Almeida-Filho, Saúde Coletiva: teoria e prática, 2023.</li>
+        <li>Ianni. O campo temático das ciências sociais em saúde no Brasil. Tempo Social, 2015.</li>
+        <li>Loyola. O lugar das ciências sociais na Saúde Coletiva. Saúde e Sociedade, 2012.</li>
+        <li>Luz. Complexidade do campo da Saúde Coletiva. Saúde e Sociedade, 2009.</li>
+        <li>Luz. Especificidade da contribuição dos saberes e práticas das ciências sociais e humanas para a saúde. Saúde e Sociedade, 2011.</li>
+        <li>Martin et al. As contribuições das Ciências Sociais e Humanas no campo da Saúde Coletiva. Interface, 2018.</li>
+        <li>Couto. Ciências Sociais em Saúde, videoaula do curso Os Pilares da Saúde Coletiva.</li>
+      </ul>
+    </details>
+    <footer>Grupo 2, Teorias, PPGSCol/UFRN</footer>
+  </section>
+</div>
+
+<script>
+// w = peso de cada pilar: [CSHS, PPG, Epidemiologia]
+const PARADAS = [
+ {quem:1, y:"1848", t:"A saúde vira assunto de Estado", w:[3,0,0],
+  p:"Jules Guérin publica Medicina Social: os serviços médicos são bens públicos e, portanto, assunto da esfera pública.",
+  tens:"O social entra na saúde junto com a aliança entre medicina e Estado.",
+  chips:[["Guérin","Precursor da ideia de que a prática médica é objeto de reflexão e intervenção públicas."],
+         ["Foucault","Poder disciplinar e biopolítica: a saúde do povo como forma de governo das populações."]]},
+ {quem:1, y:"XIX–XX", t:"Os clássicos tocam no tema", w:[4,0,0],
+  p:"A saúde aparece nas obras fundadoras da sociologia e da antropologia, ainda sem atenção sistemática.",
+  tens:"A saúde ainda não é objeto próprio das ciências sociais. No Brasil, lembra Ianni, ela seguirá quase imperceptível para as ciências sociais institucionalizadas.",
+  chips:[["Durkheim","O suicídio como fato social, explicado por causas sociais."],
+         ["Marx","Trabalho, condições de vida e a coisificação do trabalhador."],
+         ["Weber","Dominação, burocracia e racionalização da vida social."],
+         ["Mauss","O corpo não é um dado natural: é aprendido social e culturalmente."],
+         ["Eficácia simbólica","Lévi-Strauss: toda cura depende de um sistema de crenças compartilhado. Vale para o xamã e para a ciência."],
+         ["Disease, illness, sickness","A patologia para a biomedicina, a experiência de quem adoece e a dimensão social da doença."]]},
+ {quem:2, y:"1951", t:"O papel do doente", w:[5,0,0],
+  p:"Parsons vê a medicina como reguladora de desvios. Na América Latina, a Opas leva as ciências sociais ao ensino médico.",
+  tens:"Uma ciência social funcionalista, a serviço da medicina, que não toca nas relações de poder.",
+  chips:[["Parsons","O Sistema Social: médico e paciente em uma relação assimétrica e consensual."],
+         ["Straus","Em 1957, separa a sociologia na medicina da sociologia da medicina."],
+         ["Opas","Reforma do ensino médico nos anos 1950, com fundações norte-americanas, em chave comportamental."]]},
+ {quem:2, y:"1960–70", t:"A crítica ganha fôlego", w:[7,0,0],
+  p:"O interacionismo expõe conflito, estigma e iatrogenia. Na Opas, Juan César García acolhe o pensamento crítico latino-americano.",
+  tens:"O consenso de Parsons cai: médico e paciente têm perspectivas e interesses divergentes, marcados por classe, gênero e raça.",
+  chips:[["Goffman","Instituições totais, rotulação e estigma."],
+         ["Freidson","A relação médico-paciente como conflito, não como consenso."],
+         ["Illich","A denúncia do caráter iatrogênico da medicina."],
+         ["García","Na Opas de 1960 a 1970, abre espaço para a medicina social latino-americana."]]},
+ {quem:2, y:"1970–80", t:"Nasce a Saúde Coletiva", w:[10,4,3],
+  p:"O materialismo histórico liga saúde, trabalho e estrutura social. Surge a determinação social do processo saúde-doença, o conceito possível naquele contexto.",
+  tens:"As ciências sociais entram pela escola médica: ganham legitimidade e, junto, subordinação. E crescem longe das ciências sociais típicas.",
+  chips:[["Arouca","O dilema preventivista: a Medicina Preventiva muda o discurso sem mudar a prática."],
+         ["Donnangelo","Saúde e Sociedade: a medicina como prática social. A tecnologia médica não é neutra."],
+         ["Laurell","Saúde, estruturas produtivas e relações de produção."],
+         ["Pereira","Saúde e doença são objetos ao mesmo tempo sociais e biológicos."]]},
+ {quem:3, y:"1979–88", t:"Abrasco e Reforma Sanitária", w:[7,14,6],
+  p:"A Abrasco nasce em 1979, organizada em três áreas. A 8ª Conferência (1986) e a Constituição de 1988 consagram a saúde como direito.",
+  tens:"Lugar subalterno desde o início: até os anos 1980, quem ocupa o centro é o planejamento. Repare na faixa amarela.",
+  chips:[["Abrasco","Espaço de legitimação das três subáreas, com comissões e congressos próprios."],
+         ["8ª Conferência","Aprova a tese da saúde como direito universal."],
+         ["Loyola","As ciências sociais deveriam ser centrais: são o cimento de um campo que nasceu na academia."]]},
+ {quem:4, y:"1990–2000", t:"Novos objetos, velha hierarquia", w:[7,9,16],
+  p:"Gênero, HIV/aids, sexualidade e saúde mental entram em cena. A pesquisa qualitativa se consolida.",
+  tens:"O centro vira monopólio da epidemiologia (Loyola). O produtivismo premia o artigo e desvaloriza o livro. Luz fala em dupla depreciação: produção nativa para os cientistas sociais, pouco rigorosa para a biomedicina.",
+  chips:[["Minayo","O desafio do conhecimento: significados e experiências são objeto legítimo de ciência."],
+         ["Bourdieu","Campo: espaço de disputa por capitais e pela definição legítima de saúde e doença."],
+         ["Interface","Revista criada em 1997. Publicou 216 artigos de CSHS até 2017."],
+         ["Sísifo","Luz: a área precisa sempre voltar a provar que seu conhecimento é científico."]]},
+ {quem:5, y:"2010+", t:"Consolidação e autocrítica", w:[10,9,15],
+  p:"Interseccionalidade, epistemologias do Sul, biotecnologias e desinformação. A área se consolida e se critica.",
+  tens:"Norma ética própria só em 2016, com a Resolução CNS 510. As teorias ainda vêm do Norte Global. E Loyola alerta para o afrouxamento metodológico e as teses que viram agregado de artigos.",
+  chips:[["Crenshaw","Interseccionalidade: gênero, raça e classe se entrelaçam e produzem iniquidades."],
+         ["Epistemologias do Sul","Contra a dominação epistemológica, uma ecologia de saberes."],
+         ["Três paradigmas","Luz: multi, inter e transdisciplinaridade coexistem. Reduzir o campo a um só é empobrecê-lo."],
+         ["Resolução 510","Normas éticas próprias para as ciências humanas e sociais, após anos sob regra biomédica."]]}
+];
+
+const OLHARES = {
+  e:"Mede a incidência, descreve a epidemia e nomeia os chamados grupos de risco.",
+  p:"Organiza a resposta: rede de serviços e acesso universal aos antirretrovirais.",
+  c:"Revela o estigma que a noção de grupo de risco produzia, traz gênero e sexualidade para o centro e dá voz aos movimentos sociais."
+};
+
+const $ = id => document.getElementById(id);
+const tl = $("tl"), draw = $("draw"), svg = draw.querySelector("svg");
+const calmo = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// monta as paradas
+PARADAS.forEach((d, i) => {
+  const s = document.createElement("section");
+  s.className = "st stop " + (i % 2 ? "r" : "l");
+  s.dataset.quem = d.quem;
+  s.innerHTML =
+    '<span class="node"></span><div class="card">' +
+    '<p class="year">' + d.y + '</p><h3>' + d.t + '</h3><p>' + d.p + '</p>' +
+    '<div class="chips">' + d.chips.map((c, k) => '<button class="chip" aria-pressed="false" data-k="' + k + '">' + c[0] + '</button>').join("") + '</div>' +
+    '<p class="note" aria-live="polite"></p>' +
+    '<div class="acts"><button class="tbtn" aria-expanded="false">Ver a tensão</button></div>' +
+    '<div class="tens" hidden>' + d.tens + '</div></div>';
+  const note = s.querySelector(".note");
+  s.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => {
+    const era = b.getAttribute("aria-pressed") === "true";
+    s.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", "false"));
+    b.setAttribute("aria-pressed", String(!era));
+    note.textContent = era ? "" : d.chips[+b.dataset.k][1];
+  }));
+  const tb = s.querySelector(".tbtn"), te = s.querySelector(".tens");
+  tb.addEventListener("click", () => {
+    const abrir = te.hidden;
+    te.hidden = !abrir;
+    tb.setAttribute("aria-expanded", String(abrir));
+    tb.textContent = abrir ? "Fechar a tensão" : "Ver a tensão";
+  });
+  tl.appendChild(s);
+});
+const sts = [...tl.querySelectorAll(".st")];
+let ys = [], H = 0;
+
+// desenha as três faixas com espessura variável
+function faixa(cx, pts){            // pts: [y, largura]
+  const L = pts.map(p => [cx - p[1] / 2, p[0]]), R = pts.map(p => [cx + p[1] / 2, p[0]]).reverse();
+  const curva = a => a.slice(1).map((p, i) => {
+    const m = (a[i][1] + p[1]) / 2;
+    return "C" + a[i][0] + "," + m + " " + p[0] + "," + m + " " + p[0] + "," + p[1];
+  }).join(" ");
+  return "M" + L[0][0] + "," + L[0][1] + " " + curva(L) + " L" + R[0][0] + "," + R[0][1] + " " + curva(R) + " Z";
+}
+function medir(){
+  const W = tl.clientWidth, estreito = window.innerWidth <= 760;
+  H = tl.clientHeight;
+  const cx = estreito ? 30 : W / 2, k = estreito ? 1.05 : 1.75, off = estreito ? 15 : 34;
+  ys = sts.map(s => { const n = s.querySelector(".node"); return s.offsetTop + n.offsetTop + n.offsetHeight / 2; });
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  const conf = [["p", 1, -off], ["e", 2, off], ["c", 0, 0]];   // CSHS por último, ao centro
+  svg.innerHTML = conf.map(([cls, j, dx]) => {
+    const pts = [[0, PARADAS[0].w[j] * k]]
+      .concat(PARADAS.map((d, i) => [ys[i], d.w[j] * k]))
+      .concat([[H, PARADAS[PARADAS.length - 1].w[j] * k]]);
+    return '<path class="' + cls + '" d="' + faixa(cx + dx, pts) + '"/>';
+  }).join("");
+  rolar();
+}
+
+const paradasTodas = [...document.querySelectorAll(".stop")];
+function rolar(){
+  const top = tl.getBoundingClientRect().top;
+  const h = calmo ? H : Math.max(0, Math.min(H, window.innerHeight * 0.62 - top));
+  draw.style.height = h + "px";
+  sts.forEach((s, i) => s.classList.toggle("on", calmo || ys[i] <= h));
+}
+let tique = false;
+window.addEventListener("scroll", () => {
+  if (tique) return; tique = true;
+  requestAnimationFrame(() => { rolar(); tique = false; });
+}, {passive:true});
+window.addEventListener("resize", medir);
+window.addEventListener("load", medir);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(medir);
+if (window.ResizeObserver) new ResizeObserver(medir).observe(tl);
+medir();
+
+// destacar um pilar
+document.querySelectorAll(".legend button").forEach(b => b.addEventListener("click", () => {
+  const era = b.getAttribute("aria-pressed") === "true";
+  document.querySelectorAll(".legend button").forEach(x => x.setAttribute("aria-pressed", "false"));
+  if (era) svg.removeAttribute("data-focus");
+  else { b.setAttribute("aria-pressed", "true"); svg.setAttribute("data-focus", b.dataset.f); }
+}));
+
+// aposta inicial
+document.querySelectorAll(".hero .pill").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".hero .pill").forEach(x => x.setAttribute("aria-pressed", "false"));
+  b.setAttribute("aria-pressed", "true");
+  $("say").textContent = "Guardem essa aposta. Voltamos a ela no fim.";
+}));
+
+// três olhares
+document.querySelectorAll(".looks button").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".looks button").forEach(x => x.setAttribute("aria-pressed", "false"));
+  b.setAttribute("aria-pressed", "true");
+  $("lookout").textContent = OLHARES[b.dataset.k];
+}));
+
+const DESAFIOS = {
+  i:["Reforçar a formação teórica e metodológica em ciências sociais, para melhorar a qualidade dos trabalhos.",
+     "Reabilitar o ensino da Saúde Coletiva, organizado em torno de um currículo básico das principais subáreas."],
+  x:["Incluir as ciências sociais e humanas como uma subárea da Saúde Coletiva na classificação das agências de fomento.",
+     "Defender o reconhecimento de suas especificidades pelas outras subáreas, lutando contra as hierarquias e por uma distribuição mais equitativa de recursos.",
+     "Lutar contra o predomínio de explicações unicamente biológicas para o adoecimento.",
+     "Assumir a liderança crítica contra a precarização e a mercantilização crescentes da saúde."]
+};
+document.querySelectorAll("[data-d]").forEach(b => b.addEventListener("click", () => {
+  const era = b.getAttribute("aria-pressed") === "true";
+  document.querySelectorAll("[data-d]").forEach(x => x.setAttribute("aria-pressed", "false"));
+  const alvo = $("desafios");
+  if (era) { alvo.innerHTML = ""; return; }
+  b.setAttribute("aria-pressed", "true");
+  alvo.innerHTML = "<ul>" + DESAFIOS[b.dataset.d].map(t => "<li>" + t + "</li>").join("") + "</ul>";
+}));
+
+// resposta final
+$("reveal").addEventListener("click", () => {
+  $("answer").hidden = false;
+  $("reveal").setAttribute("aria-expanded", "true");
+  $("reveal").hidden = true;
+});
+
+// setas esquerda e direita pulam de parada em parada
+document.addEventListener("keydown", e => {
+  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+  const ref = window.innerHeight * 0.3;
+  const tops = paradasTodas.map(s => s.getBoundingClientRect().top);
+  let alvo;
+  if (e.key === "ArrowRight") alvo = paradasTodas.find((s, i) => tops[i] > ref + 4);
+  else alvo = [...paradasTodas].reverse().find((s, i, a) => tops[paradasTodas.indexOf(s)] < -4);
+  if (alvo) { e.preventDefault(); alvo.scrollIntoView({behavior: calmo ? "auto" : "smooth", block: "start"}); }
+});
+</script>
+</body>
+</html>
